@@ -9,12 +9,17 @@ public class SceneSelection : MonoBehaviour
     {
         if (GUI.Button(new Rect(0, 0, 100, 30), "Scene1"))
         {
-            SceneManager.LoadScene(0);
+            SceneManager.LoadScene(3);
         }
 
         if (GUI.Button(new Rect(Screen.width - 100, 0, 100, 30), "Scene2"))
         {
-            SceneManager.LoadScene(1);
+            SceneManager.LoadScene(4);
+        }
+
+        if (GUI.Button(new Rect(Screen.width / 2 - 50, 0, 100, 30), "PvP"))
+        {
+            SceneManager.LoadScene(0);
         }
     }
 }

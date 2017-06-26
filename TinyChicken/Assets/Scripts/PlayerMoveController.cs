@@ -22,7 +22,17 @@ public class PlayerMoveController : MonoBehaviour
     void IsLocalPlayer(bool val)
     {
         this.enabled = val;
+    }
 
+    public void SetInverted(bool isInverted)
+    {
+        if (isInverted)
+        {
+            mainCameraTransform.eulerAngles = new Vector3(mainCameraTransform.eulerAngles.x, 180, mainCameraTransform.eulerAngles.z);
+            screenMovementSpace = Quaternion.Euler(0, mainCameraTransform.eulerAngles.y, 0);
+            screenMovementForward = screenMovementSpace * -Vector3.forward;
+            screenMovementRight = screenMovementSpace * -Vector3.right;
+        }
     }
 
     void Awake()

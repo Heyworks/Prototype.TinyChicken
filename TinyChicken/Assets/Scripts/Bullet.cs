@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using RavingBots.CartoonExplosion;
 using UnityEngine;
 
-public class Bullet : MonoBehaviour
+public class Bullet : Photon.MonoBehaviour
 {
     [SerializeField]
     private float speed = 10;
@@ -40,7 +40,7 @@ public class Bullet : MonoBehaviour
             dist -= speed*Time.deltaTime;
             if (dist < 0)
             {
-                Boom();
+                StartCoroutine(Boom());
             }
         }
     }
@@ -57,36 +57,33 @@ public class Bullet : MonoBehaviour
             }
             else
             {
-                Boom();
+                StartCoroutine(Boom());
             }
         }
 
         if (!isExploding && collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
-            Boom();
+            StartCoroutine(Boom());
             Destroy(collision.gameObject);
+        }
+
+        if (!isExploding && collision.gameObject.layer == LayerMask.NameToLayer("Player") && collision.gameObject.GetComponent<PhotonView>().ownerId != photonView.ownerId)
+        {
+            StartCoroutine(Boom());
         }
     }
 
-    //void OnTriggerEnter(Collider other)
-    //{
-    //    if (!isExploding && other.gameObject.layer == LayerMask.NameToLayer("Arena"))
-    //    {
-    //    }
-
-    //    if (!isExploding && other.gameObject.layer == LayerMask.NameToLayer("Enemy"))
-    //    {
-    //        Boom();
-    //        Destroy(other.gameObject);
-    //    }
-    //}
-
-    private void Boom()
+    private IEnumerator Boom()
     {
         isExploding = true;
         rocket.SetActive(false);
         trail.SetActive(false);
         explosion.Play();
-        Destroy(gameObject, explosion.Duration);
+
+        if (photonView.isMine)
+        {
+            yield return new WaitForSeconds(explosion.Duration);
+            PhotonNetwork.Destroy(gameObject);
+        }
     }
 }

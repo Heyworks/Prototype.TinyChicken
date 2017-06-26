@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Cannon : MonoBehaviour
+public class Cannon : Photon.MonoBehaviour
 {
     [SerializeField]
     private Transform spawnPoint;
@@ -15,16 +15,26 @@ public class Cannon : MonoBehaviour
 
     private void Start()
     {
-        joystick = GameObject.FindGameObjectWithTag("LeftStick").GetComponent<Joystick>();
-        joystick.PointWasSet += Joystick_PointWasSet;
+        if (photonView.isMine)
+        {
+            joystick = GameObject.FindGameObjectWithTag("LeftStick").GetComponent<Joystick>();
+            joystick.PointWasSet += Joystick_PointWasSet;
+        }
     }
 
     private void Joystick_PointWasSet(Vector3 shootPosition)
     {
+        Fire(shootPosition);
+        //photonView.RPC("Fire", PhotonTargets.Others, shootPosition);
+    }
+
+    [PunRPC]
+    private void Fire(Vector3 shootPosition)
+    {
         var headLookDirection = new Vector3(shootPosition.x, tankHead.position.y, shootPosition.z);
         headLookDirection.y = tankHead.position.y;
         tankHead.LookAt(headLookDirection);
-        var go = Instantiate(bulletPrefab, spawnPoint.position, spawnPoint.rotation);
+        var go = PhotonNetwork.Instantiate(bulletPrefab.name, spawnPoint.position, spawnPoint.rotation, 0);
         var bullet = go.GetComponent<Bullet>();
 
         // Find the object hit by the raycast
@@ -33,11 +43,25 @@ public class Cannon : MonoBehaviour
         if (hitInfo.transform)
         {
             bullet.SetDistance(hitInfo.distance);
-            bullet.SetDistance(100);
+            bullet.SetDistance(50);
         }
         else
         {
-            bullet.SetDistance(100);
+            bullet.SetDistance(50);
+        }
+    }
+
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.isWriting)
+        {
+            //We own this player: send the others our data
+            stream.SendNext(tankHead.rotation);
+        }
+        else
+        {
+            //Network player, receive data			
+            tankHead.rotation = (Quaternion)stream.ReceiveNext();
         }
     }
 }

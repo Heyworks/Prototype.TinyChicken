@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FreeMovementMotor : MonoBehaviour
+public class FreeMovementMotor : MovementMotor
 {
     //public MoveController movement;
     public float walkingSpeed = 5.0f;
@@ -9,19 +9,6 @@ public class FreeMovementMotor : MonoBehaviour
 
     [SerializeField]
     private Transform rotationGroup = null;
-
-    // The direction the character wants to move in, in world space.
-    // The vector should have a length between 0 and 1.
-    [HideInInspector]
-    public Vector3 movementDirection;
-
-    // Simpler motors might want to drive movement based on a target purely
-    [HideInInspector]
-    public Vector3 movementTarget;
-
-    // The direction the character wants to face towards, in world space.
-    [HideInInspector]
-    public Vector3 facingDirection;
 
     void FixedUpdate()
     {
@@ -69,5 +56,21 @@ public class FreeMovementMotor : MonoBehaviour
 
         // Return angle multiplied with 1 or -1
         return angle * (Vector3.Dot(axis, Vector3.Cross(dirA, dirB)) < 0 ? -1 : 1);
+    }
+
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        OnPhotonSerializeViewBase(stream, info);
+
+        if (stream.isWriting)
+        {
+            //We own this player: send the others our data
+            stream.SendNext(rotationGroup.rotation);
+        }
+        else
+        {
+            //Network player, receive data			
+            rotationGroup.rotation = (Quaternion)stream.ReceiveNext();
+        }
     }
 }
