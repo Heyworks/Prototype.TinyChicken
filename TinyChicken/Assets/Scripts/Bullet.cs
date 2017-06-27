@@ -67,7 +67,7 @@ public class Bullet : Photon.MonoBehaviour
             Destroy(collision.gameObject);
         }
 
-        if (!isExploding && collision.gameObject.layer == LayerMask.NameToLayer("Player") && collision.gameObject.GetComponent<PhotonView>().ownerId != photonView.ownerId)
+        if (PhotonNetwork.connected && !isExploding && collision.gameObject.layer == LayerMask.NameToLayer("Player") && collision.gameObject.GetComponent<PhotonView>().ownerId != photonView.ownerId)
         {
             StartCoroutine(Boom());
         }
@@ -80,10 +80,18 @@ public class Bullet : Photon.MonoBehaviour
         trail.SetActive(false);
         explosion.Play();
 
-        if (photonView.isMine)
+        yield return new WaitForSeconds(explosion.Duration);
+
+        if (PhotonNetwork.connected)
         {
-            yield return new WaitForSeconds(explosion.Duration);
-            PhotonNetwork.Destroy(gameObject);
+            if (photonView.isMine)
+            {
+                PhotonNetwork.Destroy(gameObject);
+            }
+        }
+        else
+        {
+            Destroy(gameObject);
         }
     }
 }

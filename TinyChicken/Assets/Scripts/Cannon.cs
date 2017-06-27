@@ -15,7 +15,7 @@ public class Cannon : Photon.MonoBehaviour
 
     private void Start()
     {
-        if (photonView.isMine)
+        if ((PhotonNetwork.connected && photonView.isMine) || !PhotonNetwork.connected)
         {
             joystick = GameObject.FindGameObjectWithTag("LeftStick").GetComponent<Joystick>();
             joystick.PointWasSet += Joystick_PointWasSet;
@@ -34,7 +34,16 @@ public class Cannon : Photon.MonoBehaviour
         var headLookDirection = new Vector3(shootPosition.x, tankHead.position.y, shootPosition.z);
         headLookDirection.y = tankHead.position.y;
         tankHead.LookAt(headLookDirection);
-        var go = PhotonNetwork.Instantiate(bulletPrefab.name, spawnPoint.position, spawnPoint.rotation, 0);
+        GameObject go;
+        if (PhotonNetwork.connected)
+        {
+            go = PhotonNetwork.Instantiate(bulletPrefab.name, spawnPoint.position, spawnPoint.rotation, 0);
+        }
+        else
+        {
+            go = Instantiate(bulletPrefab, spawnPoint.position, spawnPoint.rotation);
+        }
+
         var bullet = go.GetComponent<Bullet>();
 
         // Find the object hit by the raycast

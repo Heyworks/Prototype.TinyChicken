@@ -9,11 +9,15 @@ public class SceneSelection : MonoBehaviour
     {
         if (GUI.Button(new Rect(0, 0, 100, 30), "Scene1"))
         {
+            if (PhotonNetwork.connected)
+                PhotonNetwork.Disconnect();
             SceneManager.LoadScene(3);
         }
 
         if (GUI.Button(new Rect(Screen.width - 100, 0, 100, 30), "Scene2"))
         {
+            if (PhotonNetwork.connected)
+                PhotonNetwork.Disconnect();
             SceneManager.LoadScene(4);
         }
 
